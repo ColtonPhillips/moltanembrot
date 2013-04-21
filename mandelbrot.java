@@ -1,26 +1,44 @@
 import java.awt.Color;
 import java.awt.Graphics;
-
+import java.awt.geom.Rectangle2D;
 import javax.swing.*;
 
 
 
 public class mandelbrot {
-	
-	public static int SCREEN_WIDTH = 640;
+    
+    public static int SCREEN_WIDTH = 640;
 	public static int SCREEN_HEIGHT = 640;
-	
+
+    public static float ZOOM_FACTOR = 0.9999999f;
+
 	public static class MyPanel extends JPanel{
 
-		public float complexPlaneWidth = 3.5f;
-		public float complexPlaneLeftEdgeCoord = -2.2f;
-		public float imaginaryPlaneHeight = 3f;
-		public float imaginaryPlaneLeftEdgeCoord = 1.4f;
-		public int MAXCOUNT = 1000;
-		public int NUM_MULTISAMPLES = 10;
+        public float REAL_PLANE_WIDTH = 3.5f;
+        public float REAL_PLANE_X = -2.2f;
+
+        public float IMAGINARY_PLANE_HEIGHT = 3f;
+        public float IMAGINARY_PLANE_Y = 1.4f;
+        
+		public int MAX_COUNT = 1000;
+        
+        public int NUM_MULTISAMPLES = 10;
 		
+        public Rectangle2D.Float complexView;
+
+        public MyPanel() {
+            complexView = new Rectangle2D.Float(
+                    REAL_PLANE_X, 
+                    IMAGINARY_PLANE_Y,
+                    REAL_PLANE_WIDTH,
+                    IMAGINARY_PLANE_HEIGHT
+            );
+        }
+
 		public void paintComponent(Graphics gfx) {
-			
+	
+            System.out.println("" + complexView.x + " " + complexView.y + " " + complexView.height + " " + complexView.width);    
+            complexView = zoomedInRect2DF(complexView,ZOOM_FACTOR);
 			gfx.setColor(Color.WHITE);
 			gfx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -43,7 +61,7 @@ public class mandelbrot {
 						
 						int count = 0;
 						
-						while (zReal*zReal + zImg*zImg <= 2*2 && count < MAXCOUNT) {
+						while (zReal*zReal + zImg*zImg <= 2*2 && count < MAX_COUNT) {
 							float nextZReal = zReal*zReal - zImg*zImg + cReal;
 							float nextZImg = 2*zReal*zImg + cImg; 
 							
@@ -53,16 +71,17 @@ public class mandelbrot {
 							count += 1;
 						}
 						
-						if (count == MAXCOUNT) {
+						if (count == MAX_COUNT) {
 							colorAcc[0] += 255;
 							colorAcc[1] += 255;
 							colorAcc[2] += 255;
+    //                        System.out.println("infinity");
 						} else {
-							// System.out.println(count);
-							float[] vals = mapCountToColor((int)easeOutQuint(count, 0, 255, MAXCOUNT));
+							float[] vals = mapCountToColor((int)easeOutQuint(count, 0, 255, MAX_COUNT));
 							colorAcc[0] += vals[0];
 							colorAcc[1] += vals[1];
 							colorAcc[2] += vals[2];
+  //                          System.out.println("and beyond!");
 						}
 						 
 					}
@@ -73,21 +92,35 @@ public class mandelbrot {
 					Color pc = new Color((int)colorAcc[0],(int) colorAcc[1],(int) colorAcc[2]);
 					
 					setPixel(x,y,pc,gfx);
+//                    System.out.println("a pixel is set");
 				}
 			}
 			
 		}
 		
+        private Rectangle2D.Float zoomedInRect2DF(Rectangle2D.Float rect, float scale) {
+            float newHeight = rect.height * scale;
+            float deltaY = (newHeight - rect.height) * 0.5f;
+
+            Rectangle2D.Float newRect = new Rectangle2D.Float(
+                    rect.x,
+                    rect.y,
+                    rect.width,
+                    newHeight
+            );
+
+            return newRect;
+        }
+
 		private void setPixel(int x, int y, Color c, Graphics gfx) {
 			gfx.setColor(c);
 			gfx.drawLine(x, y, x, y);
-			//System.out.println(""+ x + " " + y + " " + c.toString());
 		}
 		
 		private float computeRealPartFromX(float x) {
 			float f = x / SCREEN_WIDTH;
-			float realPart = f * complexPlaneWidth;
-			realPart = realPart + complexPlaneLeftEdgeCoord;
+			float realPart = f * complexView.width;
+			realPart = realPart + complexView.x;
 			
 			return realPart;
 		}
@@ -95,8 +128,8 @@ public class mandelbrot {
 		private float computeImaginaryPartFromY(float y) {
 			y = -y;
 			float f = y / SCREEN_HEIGHT;
-			float imaginaryPart = f * imaginaryPlaneHeight;
-			imaginaryPart = imaginaryPart + imaginaryPlaneLeftEdgeCoord;
+			float imaginaryPart = f * complexView.height;
+			imaginaryPart = imaginaryPart + complexView.y;
 			
 			return imaginaryPart;
 		}
