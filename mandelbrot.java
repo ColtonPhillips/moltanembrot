@@ -9,7 +9,7 @@ public class mandelbrot {
     
     public static int SCREEN_WIDTH = 640;
 	public static int SCREEN_HEIGHT = 640;
-    public static float ZOOM_FACTOR = 0.8999999f;
+    public static float ZOOM_FACTOR = 0.99f;
     
 	public static class MyPanel extends JPanel{
 
@@ -80,16 +80,20 @@ public class mandelbrot {
 					setPixel(x,y,pc,gfx);
 				}
 			}
+			
+			repaint();
 		}
 		
+		// Zooms to center
         private Rectangle2D.Float zoomedInRect2DF(Rectangle2D.Float rect, float scale) {
             float newHeight = rect.height * scale;
             float newWidth = rect.width * scale;
-            //float deltaY = (newHeight - rect.height) * 0.5f;
+            float deltaX = (newWidth - rect.width) * 0.5f;
+            float deltaY = (newHeight - rect.height) * 0.5f;
 
             Rectangle2D.Float newRect = new Rectangle2D.Float(
-                    rect.x,
-                    rect.y,
+                    rect.x - deltaX,
+                    rect.y + deltaY,
                     newWidth,
                     newHeight
             );
