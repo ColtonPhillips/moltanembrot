@@ -1,7 +1,9 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.Rectangle2D;
-import javax.swing.*;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class mandelbrot {
     
@@ -47,7 +49,8 @@ public class mandelbrot {
         
 		public void paintComponent(Graphics gfx) {
 	
-            System.out.println("" + complexView.x + " " + complexView.y + " " + complexView.height + " " + complexView.width);    
+			System.out.println(Runtime.getRuntime().freeMemory() + " / " +  Runtime.getRuntime().totalMemory());
+            //System.out.println("" + complexView.x + " " + complexView.y + " " + complexView.height + " " + complexView.width);    
            
             complexView = zoomedInRect2DF(complexView,ZOOM_FACTOR);
 			gfx.setColor(Color.WHITE);
@@ -131,8 +134,6 @@ public class mandelbrot {
 		private float dumbShit(int temp, float fudgeFactor) {
 			return (float)((Math.sin((float)temp + fudgeFactor)+1)/2)*255;
 		}
-
-
 	}
 
 	public static void main(String[] args) {
